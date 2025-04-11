@@ -1,0 +1,4 @@
+rich>=13.0.0
+pyfiglet>=0.8.post1
+cryptography>=41.0.0
+argparse>=1.4.0
