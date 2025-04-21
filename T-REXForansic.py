@@ -22,6 +22,55 @@ from rich.align import Align
 from rich.theme import Theme
 import getpass
 import platform
+import ctypes
+
+def check_virtual_environment():
+    """Check if the script is running in a virtual environment."""
+    if not hasattr(sys, 'real_prefix') and not (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix):
+        console.print("[yellow][!] You are not in a virtual environment.[/]")
+        choice = console.input("    [bold white]Would you like to activate the virtual environment? Y or N (Default Y):[/] ").strip().lower()
+        if choice in ["", "y"]:
+            activate_virtual_environment()
+        else:
+            console.print("[red][⚠] It is recommended to use a virtual environment for this script.[/]")
+            sys.exit(1)
+
+def activate_virtual_environment():
+    """Activate the virtual environment if it exists, or guide the user to create one."""
+    venv_path = os.path.join(os.getcwd(), "venv")
+    activate_script = os.path.join(venv_path, "Scripts", "activate_this.py") if platform.system() == "Windows" else os.path.join(venv_path, "bin", "activate_this.py")
+    
+    if os.path.exists(activate_script):
+        console.print("[cyan]Activating the virtual environment...[/]")
+        try:
+            with open(activate_script) as f:
+                exec(f.read(), {'__file__': activate_script})
+            console.print("[green]Virtual environment activated successfully.[/]")
+        except Exception as e:
+            console.print(f"[red]Failed to activate the virtual environment: {e}[/]")
+            sys.exit(1)
+    else:
+        console.print("[red]No virtual environment found in the project directory.[/]")
+        choice = console.input("    [bold white]Would you like to create one? Y or N (Default Y):[/] ").strip().lower()
+        if choice in ["", "y"]:
+            create_virtual_environment()
+        else:
+            console.print("[red][⚠] Please create and activate a virtual environment manually.[/]")
+            sys.exit(1)
+
+def create_virtual_environment():
+    """Create a virtual environment in the project directory."""
+    console.print("[cyan]Creating a virtual environment...[/]")
+    try:
+        subprocess.check_call([sys.executable, "-m", "venv", "venv"])
+        console.print("[green]Virtual environment created successfully.[/]")
+        console.print("[cyan]Activating the virtual environment...[/]")
+        activate_virtual_environment()
+    except Exception as e:
+        console.print(f"[red]Failed to create a virtual environment: {e}[/]")
+        sys.exit(1)
+
+
 
 # 🧪 Live Dashboard and Terminal Visuals
 def live_dashboard():
@@ -77,13 +126,39 @@ TOOLS_INFO = {
         "strings": {"install": "sudo apt-get install binutils", "command": "strings"},
         "exiftool": {"install": "sudo apt-get install libimage-exiftool-perl", "command": "exiftool"},
         "xxd": {"install": "sudo apt-get install xxd", "command": "xxd"},
-        "base64": {"command": "base64"}
+        "foremost": {"install": "sudo apt-get install foremost", "command": "foremost"},
+        "hashdeep": {"install": "sudo apt-get install hashdeep", "command": "hashdeep"},
+        "volatility": {"install": "sudo apt-get install volatility", "command": "volatility"},
+        "binwalk": {"install": "sudo apt-get install binwalk", "command": "binwalk"},
+        "tcpdump": {"install": "sudo apt-get install tcpdump", "command": "tcpdump"},
+        "yara": {"install": "sudo apt-get install yara", "command": "yara"},
+        "gpg": {"install": "sudo apt-get install gnupg", "command": "gpg"},
+        "chkrootkit": {"install": "sudo apt-get install chkrootkit", "command": "chkrootkit"},
+        "rkhunter": {"install": "sudo apt-get install rkhunter", "command": "rkhunter"},
+        "tshark": {"install": "sudo apt-get install tshark", "command": "tshark"},
+        "clamav": {"install": "sudo apt-get install clamav", "command": "clamscan"},
+        "autopsy": {"install": "sudo apt-get install autopsy", "command": "autopsy"},
+        "openstego": {"install": "sudo apt-get install openstego", "command": "openstego"},
+        "bulk_extractor": {"install": "sudo apt-get install bulk-extractor", "command": "bulk_extractor"}
     },
     "Windows": {
         "strings": {"install": "choco install strings", "command": "strings.exe"},
         "exiftool": {"install": "choco install exiftool", "command": "exiftool.exe"},
         "xxd": {"install": "choco install vim", "command": "xxd.exe"},
-        "base64": {"command": "certutil"}
+        "foremost": {"install": "choco install foremost", "command": "foremost.exe"},
+        "hashdeep": {"install": "choco install hashdeep", "command": "hashdeep.exe"},
+        "volatility": {"install": "choco install volatility", "command": "volatility.exe"},
+        "binwalk": {"install": "choco install binwalk", "command": "binwalk.exe"},
+        "tcpdump": {"install": "choco install tcpdump", "command": "tcpdump.exe"},
+        "yara": {"install": "choco install yara", "command": "yara.exe"},
+        "gpg": {"install": "choco install gpg4win", "command": "gpg.exe"},
+        "chkrootkit": {"install": "manual installation required", "command": "chkrootkit.exe"},
+        "rkhunter": {"install": "manual installation required", "command": "rkhunter.exe"},
+        "tshark": {"install": "choco install wireshark", "command": "tshark.exe"},
+        "clamav": {"install": "choco install clamav", "command": "clamscan.exe"},
+        "autopsy": {"install": "manual installation required", "command": "autopsy.exe"},
+        "openstego": {"install": "manual installation required", "command": "openstego.exe"},
+        "bulk_extractor": {"install": "manual installation required", "command": "bulk_extractor.exe"}
     }
 }
 
@@ -93,7 +168,7 @@ def get_tools_info():
 
 def banner():
     console.print(figlet_format("ForensicSpy", font="slant"), style="bold green")
-    console.print(f"[bold cyan]Author:[/] Launch • [bold yellow]{platform.system()} Edition\n")
+    console.print(f"[bold cyan]Author:[/] AMHAR • [bold yellow]{platform.system()} Edition\n")
 
 def is_admin():
     """Check if the script is running with admin privileges"""
@@ -117,6 +192,10 @@ def run_as_admin():
             # Re-run with sudo on Linux
             os.execvp('sudo', ['sudo', 'python3'] + sys.argv)
         sys.exit()
+
+def clear_terminal():
+    """Clear the terminal screen."""
+    os.system('cls' if platform.system() == 'Windows' else 'clear')
 
 def download_with_rich_progress(url, dest_path):
     try:
@@ -158,6 +237,20 @@ def install_tool(tool_name, info):
     except Exception as e:
         console.print(f"[red][✗] Error installing {tool_name}:[/] {e}")
         return False
+    
+def provide_manual_install_instructions(tool_name):
+    """Provide manual installation instructions for specific tools."""
+    if tool_name == "volatility":
+        console.print("[yellow][!] Volatility is not available in the default repositories.[/]")
+        console.print("[cyan]Please download and install it manually from the official GitHub repository:[/]")
+        console.print("[blue]https://github.com/volatilityfoundation/volatility[/]")
+    elif tool_name == "openstego":
+        console.print("[yellow][!] OpenStego is not available in the default repositories.[/]")
+        console.print("[cyan]Please download and install it manually from the official GitHub repository:[/]")
+        console.print("[blue]https://github.com/syvaidya/openstego[/]")
+    else:
+        console.print(f"[yellow][!] {tool_name} is not available for automatic installation. Please refer to its official documentation for installation instructions.[/]")    
+
 
 def check_dependencies():
     console.rule("[bold red] Dependency Check ")
@@ -230,8 +323,25 @@ def show_menu():
         ("5", "base64/certutil (encode file)"),
         ("6", "Create backup copy"),
         ("7", "Remote Forensics"),
-        ("8", "Exit")
+        ("8", "Exit"),
+        ("9", "foremost (file carving)"),
+        ("10", "hashdeep (file hashing)"),
+        ("11", "volatility (memory analysis)"),
+        ("12", "binwalk (firmware analysis)"),
+        ("13", "tcpdump (network traffic capture)"),
+        ("14", "yara (malware detection)"),
+        ("15", "gpg (file encryption)"),
+        ("16", "chkrootkit (rootkit detection)"),
+        ("17", "rkhunter (rootkit detection)"),
+        ("18", "tshark (network traffic analysis)"),
+        ("19", "dfirtriage (incident response)"),
+        ("20", "clamav (antivirus scanning)"),
+        ("21", "autopsy (digital forensics platform)"),
+        ("22", "openstego (steganography detection)"),
+        ("23", "bulk_extractor (data extraction)")
     ]
+
+    
     
     for opt in menu_options:
         table.add_row(*opt)
@@ -242,6 +352,10 @@ def run_command(choice, filepath):
     tools_info = get_tools_info()
     
     try:
+         # Clear the terminal and re-display the banner and author logos
+        clear_terminal()
+        banner()
+
         if os.path.isdir(filepath):
             files = [f for f in os.listdir(filepath) if os.path.isfile(os.path.join(filepath, f))]
             if not files:
@@ -291,6 +405,73 @@ def run_command(choice, filepath):
             
         elif choice == '8':  # exit
             return False
+        
+        elif choice == '9':  # File carving with foremost
+            output_dir = os.path.join(os.getcwd(), "foremost_output")
+            os.makedirs(output_dir, exist_ok=True)
+            cmd = ["foremost", "-i", filepath, "-o", output_dir]
+            console.print(f"[cyan]Recovering files to: {output_dir}[/]")
+
+        elif choice == '10':  # File hashing with hashdeep
+            cmd = ["hashdeep", "-r", filepath]
+            console.print(f"[cyan]Generating file hashes for: {filepath}[/]")
+
+        elif choice == '11':  # Memory analysis with volatility
+            cmd = ["volatility", "-f", filepath, "pslist"]
+            console.print(f"[cyan]Analyzing memory dump: {filepath}[/]")
+
+        elif choice == '12':  # Firmware analysis with binwalk
+            cmd = ["binwalk", filepath]
+            console.print(f"[cyan]Analyzing firmware file: {filepath}[/]")
+
+        elif choice == '13':  # Network traffic capture with tcpdump
+            output_file = os.path.join(os.getcwd(), "network_traffic.pcap")
+            cmd = ["tcpdump", "-i", "eth0", "-w", output_file]
+            console.print(f"[cyan]Capturing network traffic to: {output_file}[/]")
+
+        elif choice == '14':  # Malware scanning with YARA
+            rule_file = console.input("[bold]Enter YARA rule file path: [/]").strip()
+            cmd = ["yara", rule_file, filepath]
+            console.print(f"[cyan]Scanning file: {filepath} with YARA rules[/]")
+
+        elif choice == '15':  # File encryption with GPG
+            cmd = ["gpg", "-c", filepath]
+            console.print(f"[cyan]Encrypting file: {filepath}[/]")
+
+        elif choice == '16':  # Rootkit detection with chkrootkit
+            cmd = ["chkrootkit"]
+            console.print(f"[cyan]Scanning the system for rootkits...[/]")
+
+        elif choice == '17':  # Rootkit detection with rkhunter
+            cmd = ["rkhunter", "--check"]
+            console.print(f"[cyan]Scanning the system for rootkits with rkhunter...[/]")
+
+        elif choice == '18':  # Network traffic analysis with tshark
+            output_file = os.path.join(os.getcwd(), "tshark_traffic.pcap")
+            cmd = ["tshark", "-i", "eth0", "-w", output_file]
+            console.print(f"[cyan]Capturing network traffic to: {output_file}[/]")
+
+        elif choice == '19':  # Incident response triage with dfirtriage
+            cmd = ["dfirtriage"]
+            console.print(f"[cyan]Performing live system triage...[/]")
+
+        elif choice == '20':  # Malware scanning with ClamAV
+            cmd = ["clamscan", filepath]
+            console.print(f"[cyan]Scanning file: {filepath} for malware...[/]")
+
+        elif choice == '21':  # Launch Autopsy
+            cmd = ["autopsy"]
+            console.print(f"[cyan]Launching Autopsy for advanced forensic analysis...[/]")
+
+        elif choice == '22':  # Steganography detection with OpenStego
+            cmd = ["openstego", "extract", "-sf", filepath]
+            console.print(f"[cyan]Extracting hidden data from: {filepath}[/]")
+
+        elif choice == '23':  # Data extraction with bulk_extractor
+            output_dir = os.path.join(os.getcwd(), "bulk_extractor_output")
+            os.makedirs(output_dir, exist_ok=True)
+            cmd = ["bulk_extractor", "-o", output_dir, filepath]
+            console.print(f"[cyan]Extracting data to: {output_dir}[/]")
             
         else:
             console.print("[red]Invalid choice[/]")
@@ -315,6 +496,7 @@ def run_command(choice, filepath):
     return True
 
 def main():
+    check_virtual_environment()  # Check if the user is in a virtual environment
     banner()
     check_dependencies()
     username = get_username()

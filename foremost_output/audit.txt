@@ -1,0 +1,21 @@
+Foremost version 1.5.7 by Jesse Kornblum, Kris Kendall, and Nick Mikus
+Audit File
+
+Foremost started at Thu Apr 17 18:10:25 2025
+Invocation: foremost -i /mnt/f/MetaForansic/red.png.gpg -o /mnt/f/MetaForansic/foremost_output 
+Output directory: /mnt/f/MetaForansic/foremost_output
+Configuration file: /etc/foremost.conf
+------------------------------------------------------------------
+File: /mnt/f/MetaForansic/red.png.gpg
+Start: Thu Apr 17 18:10:25 2025
+Length: 871 B (871 bytes)
+ 
+Num	 Name (bs=512)	       Size	 File Offset	 Comment 
+
+Finish: Thu Apr 17 18:10:25 2025
+
+0 FILES EXTRACTED
+	
+------------------------------------------------------------------
+
+Foremost finished at Thu Apr 17 18:10:25 2025
