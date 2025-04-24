@@ -135,7 +135,7 @@ Contributions are welcome! Feel free to submit issues or pull requests to improv
 This project is licensed under the MIT License. See the LICENSE file for details.
 
 👨‍💻 Author
-Developed by [Amhar].
+Developed by Amhar.
 
 🌟 Star Us on GitHub!
 If you find this tool useful, please give it a ⭐ on GitHub!

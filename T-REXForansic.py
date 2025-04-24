@@ -14,63 +14,45 @@ from time import sleep
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn
 from rich.table import Table
-from pyfiglet import figlet_format
-from datetime import datetime
 from rich.live import Live
 from rich.panel import Panel
 from rich.align import Align
 from rich.theme import Theme
+from rich.layout import Layout
+from pyfiglet import figlet_format
+from datetime import datetime
 import getpass
 import platform
 import ctypes
+import threading
 
-def check_virtual_environment():
-    """Check if the script is running in a virtual environment."""
-    if not hasattr(sys, 'real_prefix') and not (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix):
-        console.print("[yellow][!] You are not in a virtual environment.[/]")
-        choice = console.input("    [bold white]Would you like to activate the virtual environment? Y or N (Default Y):[/] ").strip().lower()
-        if choice in ["", "y"]:
-            activate_virtual_environment()
-        else:
-            console.print("[red][⚠] It is recommended to use a virtual environment for this script.[/]")
-            sys.exit(1)
+theme = Theme({
+    "info": "bold cyan",
+    "warning": "bold yellow",
+    "error": "bold red",
+    "success": "bold green",
+    "header": "bold magenta",
+    "footer": "dim cyan",
+    "panel_border": "bright_cyan"
+})
+console = Console(theme=theme)
 
-def activate_virtual_environment():
-    """Activate the virtual environment if it exists, or guide the user to create one."""
-    venv_path = os.path.join(os.getcwd(), "venv")
-    activate_script = os.path.join(venv_path, "Scripts", "activate_this.py") if platform.system() == "Windows" else os.path.join(venv_path, "bin", "activate_this.py")
-    
-    if os.path.exists(activate_script):
-        console.print("[cyan]Activating the virtual environment...[/]")
-        try:
-            with open(activate_script) as f:
-                exec(f.read(), {'__file__': activate_script})
-            console.print("[green]Virtual environment activated successfully.[/]")
-        except Exception as e:
-            console.print(f"[red]Failed to activate the virtual environment: {e}[/]")
-            sys.exit(1)
+#==================
+# CTRL + C HANDLER
+#==================
+def update_logs(self):
+    if self.log_lines:
+        line = self.log_lines.pop(0)
+        self.text_box.append(line)
     else:
-        console.print("[red]No virtual environment found in the project directory.[/]")
-        choice = console.input("    [bold white]Would you like to create one? Y or N (Default Y):[/] ").strip().lower()
-        if choice in ["", "y"]:
-            create_virtual_environment()
-        else:
-            console.print("[red][⚠] Please create and activate a virtual environment manually.[/]")
-            sys.exit(1)
+        self.timer.stop()
+        self.close()
 
-def create_virtual_environment():
-    """Create a virtual environment in the project directory."""
-    console.print("[cyan]Creating a virtual environment...[/]")
-    try:
-        subprocess.check_call([sys.executable, "-m", "venv", "venv"])
-        console.print("[green]Virtual environment created successfully.[/]")
-        console.print("[cyan]Activating the virtual environment...[/]")
-        activate_virtual_environment()
-    except Exception as e:
-        console.print(f"[red]Failed to create a virtual environment: {e}[/]")
-        sys.exit(1)
+        # CLEAR TERMINAL before main()
+        os.system('cls' if os.name == 'nt' else 'clear')
 
-
+        # THEN start main()
+        threading.Timer(0.2, main).start()
 
 # 🧪 Live Dashboard and Terminal Visuals
 def live_dashboard():
@@ -120,7 +102,9 @@ def setup_logger(username, filepath=None):
 
 TOOLS_DIR = os.path.join(os.getcwd(), "tools")
 
-# Platform-specific tool information
+# ======================
+# DEPENDENCY MANAGEMENT
+# ======================
 TOOLS_INFO = {
     "Linux": {
         "strings": {"install": "sudo apt-get install binutils", "command": "strings"},
@@ -162,14 +146,24 @@ TOOLS_INFO = {
     }
 }
 
+# ======================
+# SYSTEM AND ENVIRONMENT CHECKS
+# ======================
 def get_tools_info():
     system = platform.system()
     return TOOLS_INFO.get(system, TOOLS_INFO["Linux"])  # Default to Linux if unknown system
 
+# ======================
+# BANNER 
+# ======================
 def banner():
     console.print(figlet_format("ForensicSpy", font="slant"), style="bold green")
     console.print(f"[bold cyan]Author:[/] AMHAR • [bold yellow]{platform.system()} Edition\n")
 
+
+# ======================
+# CHECK PRIVILLAGE 
+# ======================
 def is_admin():
     """Check if the script is running with admin privileges"""
     try:
@@ -302,6 +296,10 @@ def get_username():
         except Exception:
             return 'unknown'
 
+# ======================
+# FILE AND FOLDER OPERATIONS     
+# Folder Verification
+# ====================
 def get_file_or_folder():
     while True:
         path = console.input("\n[bold white]Enter the path to a file or folder:[/] ").strip()
@@ -309,10 +307,13 @@ def get_file_or_folder():
             return path
         console.print("[red][✗] Path does not exist. Please try again.[/]")
 
+# ======================
+# USER INTERACTION OPTIONS
+# ======================
 def show_menu():
-    console.rule("[bold green] Forensic Operations ")
-    table = Table(title="Available Tools", style="bold magenta")
-    table.add_column("Option", style="cyan")
+    print("Updating body with menu...")  # Debugging statement
+    table = Table(title="Available Tools", show_header=True, header_style="bold magenta")
+    table.add_column("Option", style="cyan", width=12)
     table.add_column("Description", style="yellow")
     
     menu_options = [
@@ -339,15 +340,17 @@ def show_menu():
         ("21", "autopsy (digital forensics platform)"),
         ("22", "openstego (steganography detection)"),
         ("23", "bulk_extractor (data extraction)")
-    ]
-
-    
+    ]  
     
     for opt in menu_options:
         table.add_row(*opt)
-    
+  
     console.print(table)
 
+
+# ======================
+# COMMAND EXECUTION
+# ======================
 def run_command(choice, filepath):
     tools_info = get_tools_info()
     
@@ -495,8 +498,11 @@ def run_command(choice, filepath):
         
     return True
 
+
+# ======================
+# MAIN APPLICATION
+# ======================
 def main():
-    check_virtual_environment()  # Check if the user is in a virtual environment
     banner()
     check_dependencies()
     username = get_username()
@@ -512,8 +518,9 @@ def main():
     
     try:
         while True:
-            path = get_file_or_folder()
             show_menu()
+            path = get_file_or_folder()
+            console.print(Panel(f"[bold green]📂 Selected Path:[/] {path}", title="Selected Path", border_style="cyan"))
             choice = console.input("[bold]Select option: [/]").strip()
             if not run_command(choice, path):
                 break
